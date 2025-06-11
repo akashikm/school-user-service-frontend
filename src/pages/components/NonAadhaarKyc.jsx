@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import NonAadhaarKycDetails from "./NonAadhaarKycDetails";
+import FileUploadBox from "./FileUploadBox";
 
 const formatName = (name) =>
   name
@@ -13,6 +14,7 @@ const NonAadhaarKyc = ({ userId, id }) => {
   const [docOptions, setDocOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isContinue, setIsContinue] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
 
   useEffect(() => {
     const fetchDocumentOptions = async () => {
@@ -41,12 +43,13 @@ const NonAadhaarKyc = ({ userId, id }) => {
     }
   };
 
+  const handleFileUpload = (files) => {
+  setUploadedFile(files[0]);
+  console.log("Selected file in parent:", files[0]);
+};
+
   return isContinue ? (
-    <NonAadhaarKycDetails
-      userId={userId}
-      id={id}
-      documentType={selectedCode}
-    />
+    <NonAadhaarKycDetails userId={userId} id={id} documentType={selectedCode}  uploadedFile={uploadedFile}/>
   ) : (
     <div className="max-w-md mx-auto mt-10 bg-white rounded-2xl shadow-xl p-6 relative">
       {/* Back Arrow */}
@@ -69,26 +72,33 @@ const NonAadhaarKyc = ({ userId, id }) => {
         {loading ? (
           <p className="text-gray-400 text-sm">Loading options...</p>
         ) : (
-          <div className="flex flex-col gap-2 text-sm text-gray-800">
-            {docOptions.map((doc) => (
-              <label
-                key={doc.code}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="kyc-doc"
-                  value={doc.code}
-                  checked={selectedCode === doc.code}
-                  onChange={handleRadioChange}
-                />
-                {formatName(doc.name)}
-              </label>
-            ))}
+          <div className="flex justify-between items-start w-full">
+            {/* Left side: Radio options */}
+            <div className="flex flex-col items-start gap-2 text-sm text-gray-800">
+              {docOptions.map((doc) => (
+                <label
+                  key={doc.code}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name="kyc-doc"
+                    value={doc.code}
+                    checked={selectedCode === doc.code}
+                    onChange={handleRadioChange}
+                  />
+                  {formatName(doc.name)}
+                </label>
+              ))}
+            </div>
+
+            {/* Right side: File upload box */}
+            <div>
+              <FileUploadBox onFileUpload={handleFileUpload} />
+            </div>
           </div>
         )}
       </div>
-
       <button
         onClick={handleContinue}
         className="w-full py-2 bg-pink-600 text-white font-medium rounded-md shadow-md hover:bg-pink-700"

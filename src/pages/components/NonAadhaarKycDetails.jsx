@@ -1,43 +1,55 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import KycSuccess from "./KycSuccess";
-const NonAadhaarKycDetails = ({userId, id, documentType }) => {
+const NonAadhaarKycDetails = ({ userId, id, documentType, uploadedFile }) => {
   const [isKycComplted, setIsKycCompleted] = useState(false);
-  const [error,setError] = useState("");
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
-    id:"",
-    documentType : "",
+    id: "",
+    documentType: "",
     documentNumber: "",
     dob: "",
     name: "",
     gender: "",
+    uploadedFile: "",
   });
 
-useEffect(() => {
-  if (id || documentType) {
-    setForm((prevForm) => ({
-      ...prevForm,
-      ...(id && { id }),
-      ...(documentType && { documentType }),
-    }));
-  }
-}, [id, documentType]);
-
+  useEffect(() => {
+    if (id || documentType) {
+      setForm((prevForm) => ({
+        ...prevForm,
+        ...(id && { id }),
+        ...(documentType && { documentType }),
+        ...(uploadedFile && { uploadedFile }),
+      }));
+    }
+  }, [id, documentType, uploadedFile]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
- 
-
   const handleVerify = async () => {
     try {
+      const formData = new FormData();
+      formData.append("id", form.id);
+      formData.append("documentType", form.documentType);
+      formData.append("documentNumber", form.documentNumber);
+      formData.append("dob", form.dob);
+      formData.append("name", form.name);
+      formData.append("gender", form.gender);
+      formData.append("file", form.uploadedFile);
+
       const kycResponse = await axios.post(
         "http://localhost:8080/school-user-service/kyc/save-nonAadhaar-kyc",
-        form
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
-    setIsKycCompleted(true);
-
+      setIsKycCompleted(true);
     } catch (error) {
       console.error("Save Error", error);
     }
